@@ -4,7 +4,6 @@
 package clay
 
 import (
-	"regexp"
 	"syscall/js"
 )
 
@@ -14,25 +13,6 @@ type Handler func(ctx *Context, next NextFunc) interface{}
 
 type Response interface {
 	func() interface{}
-}
-
-type Route struct {
-	pattern *regexp.Regexp
-	handler Handler
-	method  string
-}
-
-type RegexpRouter struct {
-	routes []Route
-}
-
-func NewRegexpRouter() *RegexpRouter {
-	return &RegexpRouter{}
-}
-
-type Request struct {
-	jsv    js.Value
-	params []string
 }
 
 type app struct {
@@ -45,14 +25,31 @@ func NewApp() *app {
 	}
 }
 
-type Context struct {
-	Request *Request
-}
-
 func (app *app) Listen() {
 
 	c := make(chan struct{}, 0)
 
 	// register global route handler
+	js.Global().Set("gohandle", js.FuncOf(app.router.ServeHTTP))
 	<-c
+}
+
+func (a *app) Get(path string, handler Handler) {
+	a.router.Register("GET", path, handler)
+}
+
+func (a *app) Post(path string, handler Handler) {
+	a.router.Register("POST", path, handler)
+}
+
+func (a *app) Put(path string, handler Handler) {
+	a.router.Register("PUT", path, handler)
+}
+
+func (a *app) Delete(path string, handler Handler) {
+	a.router.Register("DELETE", path, handler)
+}
+
+func (a *app) Patch(path string, handler Handler) {
+	a.router.Register("PATCH", path, handler)
 }
