@@ -9,11 +9,7 @@ import (
 
 type NextFunc func(ctx *Context)
 
-type Handler func(ctx *Context, next NextFunc) interface{}
-
-type Response interface {
-	func() interface{}
-}
+type Handler func(ctx *Context, next NextFunc) Response
 
 type app struct {
 	router *RegexpRouter
@@ -23,15 +19,6 @@ func NewApp() *app {
 	return &app{
 		router: NewRegexpRouter(),
 	}
-}
-
-func (app *app) Listen() {
-
-	c := make(chan struct{}, 0)
-
-	// register global route handler
-	js.Global().Set("gohandle", js.FuncOf(app.router.ServeHTTP))
-	<-c
 }
 
 func (a *app) Get(path string, handler Handler) {
@@ -52,4 +39,13 @@ func (a *app) Delete(path string, handler Handler) {
 
 func (a *app) Patch(path string, handler Handler) {
 	a.router.Register("PATCH", path, handler)
+}
+
+func (app *app) Listen() {
+
+	c := make(chan struct{}, 0)
+
+	// register global route handler
+	js.Global().Set("gohandle", js.FuncOf(app.router.ServeHTTP))
+	<-c
 }
