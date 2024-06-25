@@ -1,0 +1,9 @@
+name = "router-on-workers"
+main = "index.js"
+compatibility_date = "2023-03-22"
+
+
+# Include your WASM module
+wasm_modules = { "WORKER_WASM" = "./work.wasm" }
+
+rules = [{ type = "ESModule", globs = ["**/*.js"], fallthrough = true }]

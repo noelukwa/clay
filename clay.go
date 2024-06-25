@@ -46,7 +46,8 @@ func (app *app) Listen() {
 	c := make(chan struct{}, 0)
 
 	// register global route handler
-	js.Global().Set("gohandle", js.FuncOf(app.router.ServeHTTP))
 	js.Global().Set("wrapfunc", js.FuncOf(wrap_request))
+	js.Global().Set("gohandle", js.FuncOf(app.router.ServeHTTP))
+
 	<-c
 }

@@ -33,7 +33,7 @@ func (ctx *Context) JSON(v map[string]string, status ...int) Response {
 	}
 }
 
-func (ctx *Context) Text(content string, status ...int) Response {
+func (ctx *Context) Text(content interface{}, status ...int) Response {
 
 	statusCode := 200
 	if len(status) > 0 {

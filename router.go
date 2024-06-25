@@ -32,31 +32,45 @@ func (r *RegexpRouter) Register(method, pattern string, handler Handler) {
 }
 
 func (r *RegexpRouter) ServeHTTP(this js.Value, args []js.Value) interface{} {
+	js.Global().Get("console").Call("log", args[0])
+	req := &Request{}
 	request := args[0]
+	method := args[0].Get("method").String()
 	urlObj := js.Global().Get("URL").New(request.Get("url").String())
 	pathname := urlObj.Get("pathname").String()
-	method := request.Get("method").String()
 
+	js.Global().Get("console").Call("log", request)
 	methodAllowed := false
-
 	for _, route := range r.routes {
 		if matches := route.pattern.FindStringSubmatch(pathname); matches != nil {
 			if route.method != method {
 				methodAllowed = true
-				continue // Correct path but wrong method, check next routes
+				continue
 			}
+
+			params := make(map[string]string, 0)
+			for i, name := range route.pattern.SubexpNames() {
+				if i != 0 && name != "" {
+					params[name] = matches[i]
+				}
+			}
+
+			req.params = params
+			req.path = pathname
+			req.Method = method
+
 			ctx := &Context{
-				Request: &Request{jsv: request, params: matches[1:]},
+				Request: req,
 			}
 			next := func(ctx *Context) {}
-			return route.handler(ctx, next)
+			return route.handler(ctx, next).write()
 		}
 	}
 
 	if methodAllowed {
 		return methodNotAllowedResponse()
 	}
-	// If no route matches, return a 404 response
+
 	return notFoundResponse()
 }
 
